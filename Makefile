@@ -2,7 +2,7 @@
 CC = gcc
 
 # the base compiler flags
-CFLAGS ?= -Wall -Wextra -pedantic -Werror -Werror=format-security -fstack-clash-protection -fstack-protector-all -fcf-protection -Wl,-z,relro,-z,now
+CFLAGS ?= -Wall -Wextra -pedantic -Werror -Werror=format-security -fstack-clash-protection -fstack-protector-all -fcf-protection -Wl,-z,relro,-z,now -lm
 
 # special flags for debugging
 CFLAGS_DEBUG ?= -g

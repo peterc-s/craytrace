@@ -8,7 +8,7 @@
 
 typedef Vec3 Colour;
 
-inline void write_colour(FILE* fd, const Colour* pixel_colour) {
+static inline void write_colour(FILE* fd, const Colour* pixel_colour) {
     uint8_t rbyte = (uint8_t)(255.999 * pixel_colour->e[X]);
     uint8_t gbyte = (uint8_t)(255.999 * pixel_colour->e[Y]);
     uint8_t bbyte = (uint8_t)(255.999 * pixel_colour->e[Z]);

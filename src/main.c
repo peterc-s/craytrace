@@ -37,9 +37,15 @@ Colour ray_colour(const Ray* r) {
     Vec3 sphere_centre = vec3_with(0, 0, -1);
     double t = hit_sphere(&sphere_centre, 0.5, r);
     if (t > 0) {
+        // ray at the t where it hit the sphere
         Vec3 r_at_t = ray_at(r, t);
+
+        // diff between that and sphere centre
         Vec3 r_at_t_diff_centre = vec3_sub(&r_at_t, &sphere_centre);
+        
+        // hit normal vector
         Vec3 N = vec3_unit(&r_at_t_diff_centre);
+
         return vec3_mult(VEC3(N.e[X] + 1, N.e[Y] + 1, N.e[Z] + 1), 0.5);
     }
 

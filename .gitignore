@@ -1,1 +1,4 @@
 *.ppm
+c-raytrace
+c-raytrace-debug
+build

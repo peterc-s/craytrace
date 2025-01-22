@@ -75,11 +75,19 @@ run: release-run
 debugger: debug
 	$(DEBUGGER) ./$(NAME_DEBUG)
 
+image: image.ppm
+image.ppm: release
+	@echo "Rendering image..."
+	./$(NAME) > image.ppm
+	@timg image.ppm -U -C
+
 clean:
 	@echo "Removing build directory..."
 	@-rm -r $(BUILDDIR)
 	@echo "Removing output binaries..."
 	@-rm $(NAME) $(NAME_DEBUG)
+	@echo "Removing output image..."
+	@-rm image.ppm
 
 install: release
 	sudo cp $(NAME) $(INSTALLDIR)/$(NAME)

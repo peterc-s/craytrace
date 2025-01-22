@@ -82,13 +82,13 @@ static inline Vec3 vec3_div(const Vec3* v0, double t) {
                      (1.0/t) * v0->e[Z]);
 }
 
-static inline double dot(const Vec3* v0, const Vec3* v1) {
+static inline double vec3_dot(const Vec3* v0, const Vec3* v1) {
     return v0->e[X] * v1->e[X]
          + v0->e[Y] * v1->e[Y]
          + v0->e[Z] * v1->e[Z];
 }
 
-static inline Vec3 cross(const Vec3* v0, const Vec3* v1) {
+static inline Vec3 vec3_cross(const Vec3* v0, const Vec3* v1) {
     return vec3_with(v0->e[Y] * v1->e[Z] - v0->e[Z] * v1->e[Y], \
                      v0->e[Z] * v1->e[X] - v0->e[X] * v1->e[Z], \
                      v0->e[X] * v1->e[Y] - v0->e[Y] * v1->e[X]);

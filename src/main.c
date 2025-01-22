@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "colour.h"
 #include "ray.h"
@@ -8,7 +9,32 @@
 // 16 KiB IO buffer
 #define IO_BUFSIZ 1024 * 16
 
+bool hit_sphere(const Point3* centre, double radius, const Ray* r) {
+    // C - Q
+    Vec3 oc = vec3_sub(centre, &r->orig);
+
+    // a = d . d
+    double a = vec3_dot(&r->dir, &r->dir);
+
+    // b = -2d . (C - Q)
+    double b = -2.0 * vec3_dot(&r->dir, &oc);
+
+    // c = (C - Q) . (C - Q) - r^2
+    double c = vec3_dot(&oc, &oc) - radius * radius;
+
+    // \Delta = b^2 + 4ac
+    double discriminant = b * b - 4 * a * c;
+
+    // if geq 0 then at least one real root
+    return discriminant >= 0;
+}
+
 Colour ray_colour(const Ray* r) {
+    Vec3 sphere_centre = vec3_with(0, 0, -1);
+    if (hit_sphere(&sphere_centre, 0.5, r)) {
+        return vec3_with(1, 0, 0);
+    }
+
     Vec3 unit_direction = vec3_unit(&r->dir);
 
     // a

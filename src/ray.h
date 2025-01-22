@@ -9,7 +9,7 @@ typedef struct {
 } Ray;
 
 inline Ray ray() {
-    return (Ray){};
+    return (Ray){ 0 };
 }
 
 inline Ray ray_with(const Point3* orig, const Vec3* dir) {

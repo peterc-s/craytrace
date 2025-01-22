@@ -4,6 +4,9 @@
 #include <math.h>
 #include <stdio.h>
 
+#define VEC3(e0, e1, e2) \
+    (&(Vec3) { .e = { (e0), (e1), (e2) } })
+
 typedef enum {
     X,
     Y,

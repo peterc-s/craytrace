@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
+#include <math.h>
 
 #include "colour.h"
 #include "ray.h"
@@ -9,7 +9,7 @@
 // 16 KiB IO buffer
 #define IO_BUFSIZ 1024 * 16
 
-bool hit_sphere(const Point3* centre, double radius, const Ray* r) {
+double hit_sphere(const Point3* centre, double radius, const Ray* r) {
     // C - Q
     Vec3 oc = vec3_sub(centre, &r->orig);
 
@@ -26,13 +26,21 @@ bool hit_sphere(const Point3* centre, double radius, const Ray* r) {
     double discriminant = b * b - 4 * a * c;
 
     // if geq 0 then at least one real root
-    return discriminant >= 0;
+    if (discriminant < 0) {
+        return -1.0;
+    } else {
+        return (-b - sqrt(discriminant)) / (2.0 * a);
+    }
 }
 
 Colour ray_colour(const Ray* r) {
     Vec3 sphere_centre = vec3_with(0, 0, -1);
-    if (hit_sphere(&sphere_centre, 0.5, r)) {
-        return vec3_with(1, 0, 0);
+    double t = hit_sphere(&sphere_centre, 0.5, r);
+    if (t > 0) {
+        Vec3 r_at_t = ray_at(r, t);
+        Vec3 r_at_t_diff_centre = vec3_sub(&r_at_t, &sphere_centre);
+        Vec3 N = vec3_unit(&r_at_t_diff_centre);
+        return vec3_mult(VEC3(N.e[X] + 1, N.e[Y] + 1, N.e[Z] + 1), 0.5);
     }
 
     Vec3 unit_direction = vec3_unit(&r->dir);
@@ -41,12 +49,10 @@ Colour ray_colour(const Ray* r) {
     double a = 0.5 * (unit_direction.e[Y] + 1.0);
 
     // (1.0 - a) * white
-    Colour white = vec3_with(1.0, 1.0, 1.0);
-    Colour white_blend = vec3_mult(&white, 1.0 - a);
+    Colour white_blend = vec3_mult(VEC3(1.0, 1.0, 1.0), 1.0 - a);
 
     // a * blue
-    Colour blue = vec3_with(0.5, 0.7, 1.0);
-    Colour blue_blend = vec3_mult(&blue, a);
+    Colour blue_blend = vec3_mult(VEC3(0.5, 0.7, 1.0), a);
 
     // (1.0-a) * white + a * blue
     return vec3_add(&white_blend, &blue_blend);

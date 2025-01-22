@@ -27,7 +27,7 @@ static inline const Vec3* ray_direction(const Ray* ray) {
     return &ray->dir;
 }
 
-static inline Point3 at(const Ray* ray, double t) {
+static inline Point3 ray_at(const Ray* ray, double t) {
     Vec3 mult_dir = vec3_mult(&ray->dir, t);
     return vec3_add(&ray->orig, &mult_dir);
 }

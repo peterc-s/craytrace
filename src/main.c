@@ -8,9 +8,6 @@
 #include "vec3.h"
 #include "sphere_list.h"
 
-// 16 KiB IO buffer
-#define IO_BUFSIZ 1024 * 16
-
 Colour ray_colour(const Ray* r, SphereList* sphere_list) {
     HitRecord rec = { 0 };
     if (sphere_list_hit(sphere_list, r, 0, INFINITY, &rec)) {

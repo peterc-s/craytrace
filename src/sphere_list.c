@@ -86,7 +86,7 @@ bool sphere_hit(Point3* centre, double radius, const Ray* r, Interval ray_t, Hit
     return true;
 }
 
-bool sphere_list_hit(SphereList* sphere_list, const Ray* r, Interval ray_t, HitRecord* rec) {
+bool sphere_list_hit(const SphereList* sphere_list, const Ray* r, Interval ray_t, HitRecord* rec) {
     HitRecord temp_rec;
     bool hit_anything = false;
     double closest_so_far = ray_t.max;

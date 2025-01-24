@@ -21,6 +21,6 @@ void sphere_list_destroy(SphereList* sphere_list);
 Result sphere_list_add(SphereList* sphere_list, Point3 centre, double radii);
 
 bool sphere_hit(Point3* centre, double radius, const Ray* r, Interval ray_t, HitRecord* rec);
-bool sphere_list_hit(SphereList* sphere_list, const Ray* r, Interval ray_t, HitRecord* rec);
+bool sphere_list_hit(const SphereList* sphere_list, const Ray* r, Interval ray_t, HitRecord* rec);
 
 #endif

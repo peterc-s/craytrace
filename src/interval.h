@@ -36,4 +36,10 @@ static inline bool interval_surrounds(const Interval* interval, double x) {
         && interval->max > x;
 }
 
+static inline double interval_clamp(const Interval* interval, double x) {
+    if (x < interval->min) return interval->min;
+    if (x > interval->max) return interval->max;
+    return x;
+}
+
 #endif

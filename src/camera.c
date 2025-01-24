@@ -1,5 +1,7 @@
 #include "camera.h"
 #include "constants.h"
+#include "ray.h"
+#include "vec3.h"
 
 static Colour ray_colour(const Ray* r, const SphereList* sphere_list) {
     HitRecord rec = { 0 };
@@ -24,19 +26,23 @@ static Colour ray_colour(const Ray* r, const SphereList* sphere_list) {
     return vec3_add(&white_blend, &blue_blend);
 }
 
-Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width) {
+Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width, uint16_t sample_grid_size) {
     camera->aspect_ratio = aspect_ratio;
     camera->image_width = image_width;
+    camera->sample_grid_size = sample_grid_size;
 
-    if (camera->aspect_ratio == 0 || camera->image_width == 0) {
-        fprintf(stderr, "Failed to initialise camera, aspect ratio or image width set to 0.\n");
+    if (camera->aspect_ratio <= 0 || camera->image_width <= 0 || camera->sample_grid_size == 0) {
+        fprintf(stderr, "Failed to initialise camera. Invalid aspect ratio, image width, or sample grid size.\n");
         return ERROR;
     }
 
     double image_height_f = camera->image_width / camera->aspect_ratio;
     camera->image_height = (image_height_f < 1.0) ? 1 : (uint16_t)image_height_f;
 
+    // for normalising pixel samples later
+    camera->pixel_samples_scale = 1.0 / (camera->sample_grid_size * camera->sample_grid_size);
 
+    // viewport
     double focal_length = 1.0;
     double viewport_height = 2.0;
     double viewport_width = viewport_height * ((double)camera->image_width / camera->image_height);
@@ -45,6 +51,7 @@ Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width) {
     Vec3 viewport_u = vec3_with(viewport_width, 0, 0);
     Vec3 viewport_v = vec3_with(0, -viewport_height, 0);
 
+    // deltas
     camera->pixel_delta_u = vec3_div(&viewport_u, camera->image_width);
     camera->pixel_delta_v = vec3_div(&viewport_v, camera->image_height);
 
@@ -82,7 +89,39 @@ Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width) {
     return SUCCESS;
 }
 
-void camera_render(Camera* camera, const SphereList* spheres) {
+static inline Vec3 sample_grid(uint16_t grid_size, uint16_t sample_num) {
+    // creates offsets [-0.5, 0.5] from a grid
+    return VEC3( \
+            0.5 - (double)(sample_num % grid_size) / (grid_size - 1), \
+            0.5 - (uint16_t)(sample_num / grid_size) / (double)(grid_size - 1), \
+            0);
+}
+
+Ray get_ray(const Camera* camera, uint16_t i, uint16_t j, uint16_t sample_num) {
+    // initialise offset to 0
+    Vec3 offset = vec3();
+
+    // if antialiasing on, then get the sample offset
+    if (camera->sample_grid_size != 1) {
+        offset = sample_grid(camera->sample_grid_size, sample_num);
+    }
+
+    Point3 pixel_sample = camera->pixel00_loc;
+    {
+        // calculate offset from pixel00
+        Point3 delta_u_j_offset = vec3_mult(&camera->pixel_delta_u, (j + offset.e[X]));
+        Point3 delta_v_i_offset = vec3_mult(&camera->pixel_delta_v, (i + offset.e[Y]));
+        vec3_add_assign(&pixel_sample, &delta_u_j_offset);
+        vec3_add_assign(&pixel_sample, &delta_v_i_offset);
+    }
+
+    // get ray direction using pixel sample offset
+    Vec3 ray_direction = vec3_sub(&pixel_sample, &camera->centre);
+
+    return ray_with(&camera->centre, &ray_direction);
+}
+
+void camera_render(const Camera* camera, const SphereList* spheres) {
     // set up stdout buffering
     char stdout_buf[IO_BUFSIZ];
     setvbuf(stdout, stdout_buf, _IOFBF, IO_BUFSIZ);
@@ -93,26 +132,18 @@ void camera_render(Camera* camera, const SphereList* spheres) {
     for (uint16_t i = 0; i < camera->image_height; ++i) {
         fprintf(stderr, "\rLines done: %d / %d", i + 1, camera->image_height);
         for (uint16_t j = 0; j < camera->image_width; ++j) {
-            // pixel00_loc + (j * pixel_delta_u) + (i * pixel_delta_v)
-            Vec3 pixel_centre;
-            {
-                // (j * pixel_delta_u)
-                Vec3 j_delta_u = vec3_mult(&camera->pixel_delta_u, j);
+            // pixel starts with nothing
+            Colour pixel_colour = vec3();
 
-                // (i * pixel_delta_v)
-                Vec3 i_delta_v = vec3_mult(&camera->pixel_delta_v, i);
-
-                // (j * pixel_delta_u) + (i * pixel_delta_v)
-                Vec3 ij_delta_vu = vec3_add(&j_delta_u, &i_delta_v);
-
-                // pixel00_loc + (j * pixel_delta_u) + (i * pixel_delta_v)
-                pixel_centre = vec3_add(&camera->pixel00_loc, &ij_delta_vu);
+            // add samples to pixel
+            for (uint16_t sample = 0; sample < camera->sample_grid_size * camera->sample_grid_size; ++sample) {
+                Ray r = get_ray(camera, i, j, sample);
+                Colour ray_col = ray_colour(&r, spheres);
+                vec3_add_assign(&pixel_colour, &ray_col);
             }
 
-            Vec3 ray_direction = vec3_sub(&pixel_centre, &camera->centre);
-            Ray r = ray_with(&camera->centre, &ray_direction);
-
-            Colour pixel_colour = ray_colour(&r, spheres);
+            // average samples
+            vec3_mult_assign(&pixel_colour, camera->pixel_samples_scale);
             write_colour(stdout, &pixel_colour);
         }
     }

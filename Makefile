@@ -86,6 +86,10 @@ image.ppm: $(NAME)
 	@echo "Rendering image..."
 	./$(NAME) > image.ppm
 
+render: release
+	@echo "Rendering image..."
+	./$(NAME) > image.ppm
+
 clean:
 	@echo "Removing build directory..."
 	@-rm -r $(BUILDDIR)

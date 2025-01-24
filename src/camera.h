@@ -19,9 +19,10 @@ typedef struct {
     uint16_t image_width;
     uint16_t image_height;
     uint16_t sample_grid_size;
+    uint16_t max_ray_bounces;
 } Camera;
 
-Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width, uint16_t samples_per_pixel);
+Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width, uint16_t sample_grid_size, uint16_t max_ray_bounces);
 void camera_render(const Camera* camera, const SphereList* spheres);
 
 #endif

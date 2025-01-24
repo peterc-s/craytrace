@@ -1,10 +1,13 @@
 #include <stdlib.h>
+#include <time.h>
 
 #include "vec3.h"
 #include "sphere_list.h"
 #include "camera.h"
 
 int main(void) {
+    srand(time(NULL));
+
     /// world
     // spheres
     SphereList spheres;
@@ -19,7 +22,7 @@ int main(void) {
 
     // camera
     Camera cam;
-    result = camera_init(&cam, 16.0 / 9.0, 400, 4);
+    result = camera_init(&cam, 16.0 / 9.0, 400, 33, 6);
     if (result == ERROR) exit(EXIT_FAILURE);
 
     camera_render(&cam, &spheres);

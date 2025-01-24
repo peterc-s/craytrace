@@ -3,12 +3,17 @@
 #include "ray.h"
 #include "vec3.h"
 
-static Colour ray_colour(const Ray* r, const SphereList* sphere_list) {
+static Colour ray_colour(const Ray* r, uint16_t depth, const SphereList* sphere_list) {
+    if (depth <= 1) return vec3();
+
     HitRecord rec = { 0 };
-    if (sphere_list_hit(sphere_list, r, INTERVAL(0, INFINITY), &rec)) {
-        Vec3 normal_colour = vec3_add(&rec.normal, &VEC3(1, 1, 1));
-        vec3_mult_assign(&normal_colour, 0.5);
-        return normal_colour;
+    if (sphere_list_hit(sphere_list, r, INTERVAL(0.01, INFINITY), &rec)) {
+        Vec3 random_unit = vec3_random_unit();
+        Vec3 direction = vec3_add(&rec.normal, &random_unit);
+        Ray new_ray = ray_with(&rec.p, &direction);
+        Colour ray_col = ray_colour(&new_ray, depth - 1, sphere_list);
+
+        return vec3_mult(&ray_col, 0.5);
     }
 
     Vec3 unit_direction = vec3_unit(&r->dir);
@@ -26,10 +31,11 @@ static Colour ray_colour(const Ray* r, const SphereList* sphere_list) {
     return vec3_add(&white_blend, &blue_blend);
 }
 
-Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width, uint16_t sample_grid_size) {
+Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width, uint16_t sample_grid_size, uint16_t max_ray_bounces) {
     camera->aspect_ratio = aspect_ratio;
     camera->image_width = image_width;
     camera->sample_grid_size = sample_grid_size;
+    camera->max_ray_bounces = max_ray_bounces;
 
     if (camera->aspect_ratio <= 0 || camera->image_width <= 0 || camera->sample_grid_size == 0) {
         fprintf(stderr, "Failed to initialise camera. Invalid aspect ratio, image width, or sample grid size.\n");
@@ -138,7 +144,7 @@ void camera_render(const Camera* camera, const SphereList* spheres) {
             // add samples to pixel
             for (uint16_t sample = 0; sample < camera->sample_grid_size * camera->sample_grid_size; ++sample) {
                 Ray r = get_ray(camera, i, j, sample);
-                Colour ray_col = ray_colour(&r, spheres);
+                Colour ray_col = ray_colour(&r, camera->max_ray_bounces, spheres);
                 vec3_add_assign(&pixel_colour, &ray_col);
             }
 

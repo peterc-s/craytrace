@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdio.h>
 
+#include "utils.h"
+
 #define VEC3(e0, e1, e2) \
     ((Vec3) { .e = { (e0), (e1), (e2) } })
 
@@ -25,6 +27,14 @@ static inline Vec3 vec3() {
 
 static inline Vec3 vec3_with(double e0, double e1, double e2) {
     return (Vec3) { .e = {e0, e1, e2} };
+}
+
+static inline Vec3 vec3_random() {
+    return VEC3(random_double(), random_double(), random_double());
+}
+
+static inline Vec3 vec3_random_in(double min, double max) {
+    return VEC3(random_double_in(min, max), random_double_in(min, max), random_double_in(min, max));
 }
 
 static inline Vec3 vec3_neg(Vec3* v0) {
@@ -99,6 +109,25 @@ static inline Vec3 vec3_cross(const Vec3* v0, const Vec3* v1) {
 
 static inline Vec3 vec3_unit(const Vec3* v0) {
     return vec3_div(v0, vec3_length(v0));
+}
+
+static inline Vec3 vec3_random_unit() {
+    while (true) {
+        Vec3 p = vec3_random_in(-1.0, 1.0);
+        double len_sq = vec3_length_squared(&p); 
+        if (1e-160 < len_sq && len_sq <= 1) {
+            return vec3_div(&p, sqrt(len_sq));
+        }
+    }
+}
+
+static inline Vec3 vec3_random_unit_hsphere(const Vec3* normal) {
+    Vec3 on_unit_sphere = vec3_random_unit();
+    if (vec3_dot(&on_unit_sphere, normal) > 0.0) {
+        return on_unit_sphere;
+    } else {
+        return vec3_neg(&on_unit_sphere);
+    }
 }
 
 #endif

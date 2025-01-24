@@ -1,4 +1,6 @@
 *.ppm
+*.png
+*.jpg
 c-raytrace
 c-raytrace-debug
 build

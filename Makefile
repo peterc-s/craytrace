@@ -38,6 +38,10 @@ NAME_DEBUG = $(NAME)-debug
 # debugger to use when doing `make debugger`
 DEBUGGER ?= gdb
 
+# viewer to view image with
+VIEWER = timg
+VIEWER_FLAGS = -U -C
+
 release: CFLAGS += $(CFLAGS_RELEASE)
 release: $(NAME)
 
@@ -76,7 +80,7 @@ debugger: debug
 	$(DEBUGGER) ./$(NAME_DEBUG)
 
 image: image.ppm
-	@timg image.ppm -U -C
+	@$(VIEWER) image.ppm $(VIEWER_FLAGS)
 
 image.ppm: $(NAME)
 	@echo "Rendering image..."

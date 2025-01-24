@@ -17,7 +17,7 @@ int main(void) {
 
     // camera
     Camera cam;
-    camera_init(&cam, 16.0 / 9.0, 2000);
+    camera_init(&cam, 16.0 / 9.0, 400);
     camera_render(&cam, &spheres);
 
     // free memory

@@ -2,7 +2,7 @@
 CC = gcc
 
 # the base compiler flags
-CFLAGS ?= -Wall -Wextra -pedantic -Werror -Werror=format-security -fstack-clash-protection -fstack-protector-all -fcf-protection -Wl,-z,relro,-z,now -lm
+CFLAGS ?= -std=c23 -Wall -Wextra -pedantic -Werror -Werror=format-security -fstack-clash-protection -fstack-protector-all -fcf-protection -Wl,-z,relro,-z,now -lm
 
 # special flags for debugging
 CFLAGS_DEBUG ?= -g
@@ -76,10 +76,11 @@ debugger: debug
 	$(DEBUGGER) ./$(NAME_DEBUG)
 
 image: image.ppm
-image.ppm: release
+	@timg image.ppm -U -C
+
+image.ppm: $(NAME)
 	@echo "Rendering image..."
 	./$(NAME) > image.ppm
-	@timg image.ppm -U -C
 
 clean:
 	@echo "Removing build directory..."
@@ -95,4 +96,4 @@ install: release
 uninstall:
 	sudo rm $(INSTALLDIR)/$(NAME)
 
-.PHONY: all debug release clean debug-run release-run run debugger install uninstall
+.PHONY: all debug release clean debug-run release-run run debugger install uninstall image

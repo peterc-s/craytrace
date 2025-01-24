@@ -11,7 +11,7 @@ typedef struct {
     bool front_face;
 } HitRecord;
 
-void hit_set_face_norm(HitRecord* rec, const Ray* r, const Vec3* outward_normal) {
+static inline void hit_set_face_norm(HitRecord* rec, const Ray* r, Vec3* outward_normal) {
     // NOTE: outward_normal assumed to have unit length.
 
     rec->front_face = vec3_dot(&r->dir, outward_normal) < 0;

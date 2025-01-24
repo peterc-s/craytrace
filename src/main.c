@@ -2,51 +2,21 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "constants.h"
 #include "colour.h"
 #include "ray.h"
 #include "vec3.h"
+#include "sphere_list.h"
 
 // 16 KiB IO buffer
 #define IO_BUFSIZ 1024 * 16
 
-double hit_sphere(const Point3* centre, double radius, const Ray* r) {
-    // C - Q
-    Vec3 oc = vec3_sub(centre, &r->orig);
-
-    // a = d . d
-    double a = vec3_dot(&r->dir, &r->dir);
-
-    // b = -2d . (C - Q)
-    double b = -2.0 * vec3_dot(&r->dir, &oc);
-
-    // c = (C - Q) . (C - Q) - r^2
-    double c = vec3_dot(&oc, &oc) - radius * radius;
-
-    // \Delta = b^2 + 4ac
-    double discriminant = b * b - 4 * a * c;
-
-    // if geq 0 then at least one real root
-    if (discriminant < 0) {
-        return -1.0;
-    } else {
-        return (-b - sqrt(discriminant)) / (2.0 * a);
-    }
-}
-
-Colour ray_colour(const Ray* r) {
-    Vec3 sphere_centre = vec3_with(0, 0, -1);
-    double t = hit_sphere(&sphere_centre, 0.5, r);
-    if (t > 0) {
-        // ray at the t where it hit the sphere
-        Vec3 r_at_t = ray_at(r, t);
-
-        // diff between that and sphere centre
-        Vec3 r_at_t_diff_centre = vec3_sub(&r_at_t, &sphere_centre);
-        
-        // hit normal vector
-        Vec3 N = vec3_unit(&r_at_t_diff_centre);
-
-        return vec3_mult(VEC3(N.e[X] + 1, N.e[Y] + 1, N.e[Z] + 1), 0.5);
+Colour ray_colour(const Ray* r, SphereList* sphere_list) {
+    HitRecord rec = { 0 };
+    if (sphere_list_hit(sphere_list, r, 0, INFINITY, &rec)) {
+        Vec3 normal_colour = vec3_add(&rec.normal, VEC3(1, 1, 1));
+        vec3_mult_assign(&normal_colour, 0.5);
+        return normal_colour;
     }
 
     Vec3 unit_direction = vec3_unit(&r->dir);
@@ -71,9 +41,16 @@ int main(void) {
 
     // image
     double aspect_ratio = 16.0 / 9.0;
-    uint16_t image_width = 400;
+    uint16_t image_width = 2000;
     double image_height_f = image_width / aspect_ratio;
     uint16_t image_height = (image_height_f < 1.0) ? 1 : (uint16_t)image_height_f;
+
+    /// world
+    // spheres
+    SphereList spheres;
+    sphere_list_new(&spheres);
+    sphere_list_add(&spheres, vec3_with(0, -100.5, -1), 100);
+    sphere_list_add(&spheres, vec3_with(0, 0, -1), 0.5);
 
     // camera
     double focal_length = 1.0;
@@ -146,10 +123,12 @@ int main(void) {
             Vec3 ray_direction = vec3_sub(&pixel_center, &camera_center);
             Ray r = ray_with(&camera_center, &ray_direction);
 
-            Colour pixel_colour = ray_colour(&r);
+            Colour pixel_colour = ray_colour(&r, &spheres);
             write_colour(stdout, &pixel_colour);
         }
     }
+
+    sphere_list_destroy(&spheres);
 
     fprintf(stderr, "\nDone.\n");
     fflush(stdout);

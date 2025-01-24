@@ -53,7 +53,7 @@ Result sphere_list_add(SphereList* sphere_list, Point3 centre, double radii) {
     return SUCCESS;
 }
 
-bool sphere_hit(Point3* centre, double radius, const Ray* r, double ray_tmin, double ray_tmax, HitRecord* rec) {
+bool sphere_hit(Point3* centre, double radius, const Ray* r, Interval ray_t, HitRecord* rec) {
     Vec3 oc = vec3_sub(centre, &r->orig);
     double a = vec3_length_squared(&r->dir);
     double h = vec3_dot(&r->dir, &oc);
@@ -70,9 +70,9 @@ bool sphere_hit(Point3* centre, double radius, const Ray* r, double ray_tmin, do
 
     double sqrt_d = sqrt(discriminant);
     double root = (h - sqrt_d) / a;
-    if (root <= ray_tmin || ray_tmax <= root) {
+    if (!interval_surrounds(&ray_t, root)) {
         root = (h + sqrt_d / a);
-        if (root <= ray_tmin || ray_tmax <= root) {
+        if (!interval_surrounds(&ray_t, root)) {
             return false;
         }
     }
@@ -86,13 +86,13 @@ bool sphere_hit(Point3* centre, double radius, const Ray* r, double ray_tmin, do
     return true;
 }
 
-bool sphere_list_hit(SphereList* sphere_list, const Ray* r, double ray_tmin, double ray_tmax, HitRecord* rec) {
+bool sphere_list_hit(SphereList* sphere_list, const Ray* r, Interval ray_t, HitRecord* rec) {
     HitRecord temp_rec;
     bool hit_anything = false;
-    double closest_so_far = ray_tmax;
+    double closest_so_far = ray_t.max;
 
     for (size_t i = 0; i < sphere_list->len; ++i) {
-        if (sphere_hit(sphere_list->centres + i, sphere_list->radii[i], r, ray_tmin, closest_so_far, &temp_rec)) {
+        if (sphere_hit(sphere_list->centres + i, sphere_list->radii[i], r, INTERVAL(ray_t.min, closest_so_far), &temp_rec)) {
             hit_anything = true;
             closest_so_far = temp_rec.t;
             *rec = temp_rec;

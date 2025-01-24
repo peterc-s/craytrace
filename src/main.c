@@ -10,8 +10,8 @@
 
 Colour ray_colour(const Ray* r, SphereList* sphere_list) {
     HitRecord rec = { 0 };
-    if (sphere_list_hit(sphere_list, r, 0, INFINITY, &rec)) {
-        Vec3 normal_colour = vec3_add(&rec.normal, VEC3(1, 1, 1));
+    if (sphere_list_hit(sphere_list, r, INTERVAL(0, INFINITY), &rec)) {
+        Vec3 normal_colour = vec3_add(&rec.normal, &VEC3(1, 1, 1));
         vec3_mult_assign(&normal_colour, 0.5);
         return normal_colour;
     }
@@ -22,10 +22,10 @@ Colour ray_colour(const Ray* r, SphereList* sphere_list) {
     double a = 0.5 * (unit_direction.e[Y] + 1.0);
 
     // (1.0 - a) * white
-    Colour white_blend = vec3_mult(VEC3(1.0, 1.0, 1.0), 1.0 - a);
+    Colour white_blend = vec3_mult(&VEC3(1.0, 1.0, 1.0), 1.0 - a);
 
     // a * blue
-    Colour blue_blend = vec3_mult(VEC3(0.5, 0.7, 1.0), a);
+    Colour blue_blend = vec3_mult(&VEC3(0.5, 0.7, 1.0), a);
 
     // (1.0-a) * white + a * blue
     return vec3_add(&white_blend, &blue_blend);

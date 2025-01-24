@@ -7,9 +7,6 @@
 #include "camera.h"
 
 int main(void) {
-    // set up stdout buffering
-    char stdout_buf[IO_BUFSIZ];
-    setvbuf(stdout, stdout_buf, _IOFBF, IO_BUFSIZ);
 
     /// world
     // spheres
@@ -21,9 +18,8 @@ int main(void) {
     // camera
     Camera cam;
     camera_init(&cam, 16.0 / 9.0, 2000);
-
-    // render
     camera_render(&cam, &spheres);
 
+    // free memory
     sphere_list_destroy(&spheres);
 }

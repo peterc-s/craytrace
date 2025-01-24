@@ -83,6 +83,11 @@ Result camera_init(Camera* camera, double aspect_ratio, uint16_t image_width) {
 }
 
 void camera_render(Camera* camera, const SphereList* spheres) {
+    // set up stdout buffering
+    char stdout_buf[IO_BUFSIZ];
+    setvbuf(stdout, stdout_buf, _IOFBF, IO_BUFSIZ);
+
+    // header
     printf("P3\n%d %d\n255\n", camera->image_width, camera->image_height);
 
     for (uint16_t i = 0; i < camera->image_height; ++i) {

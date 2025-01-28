@@ -29,7 +29,7 @@ OBJ_DEBUG = $(SRC:$(SRCDIR)/%.c=$(DEBUGDIR)/%.o)
 OBJ_RELEASE = $(SRC:$(SRCDIR)/%.c=$(RELEASEDIR)/%.o)
 
 # the install directory
-INSTALLDIR = /usr/sbin
+INSTALLDIR = /usr/bin
 
 # target name
 NAME = c-raytrace

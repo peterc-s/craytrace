@@ -10,7 +10,7 @@ Follows [RayTracing in One Weekend](https://raytracing.github.io/books/RayTracin
 
 This was only tested on a GNU/Linux machine, it may still work on a Windows/Mac/BSD system, but it hasn't been tested.
 
-# Optional Requirements
+## Optional Requirements
 - GDB - for debugging.
 - timg + a kitty graphics compatible terminal emulator.
 
